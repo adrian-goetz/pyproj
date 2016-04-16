@@ -1,0 +1,10 @@
+{% extends "master.html" %}
+{% block title %}{{user}}'s Canvas Tools{% endblock %}
+{% block body %}
+<h1>Hello, {{user}}</h1>
+<p>Please feel free to access our Canvas tools!</p>
+<p><a href="{{ url_for('take_it_offline') }}"><button>Take it Offline!</a></button> - A tool for students who cannot always acces the internet.</p>
+<p><a href="{{ url_for('construction') }}"><button>Final Quest</a></button> - Under construction</p>
+<p><a href="{{ url_for('construction') }}"><button>You're a Star</a></button> - Under construction</p>
+</div>
+{% endblock %}

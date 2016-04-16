@@ -1,0 +1,20 @@
+{% extends "master.html" %}
+{% block title %}Take it Offline{% endblock %}
+{% block body %}
+<div class="container">
+  <p>List of Courses:</p>
+  <ul>
+    {% for n in wco._get_courses() %}
+    <li><button>{{n['name']}}</button></li>
+    {% endfor %}
+  </ul>
+</div>
+
+
+
+<p><a href="{{ url_for('index') }}"><button>Home</button></a></p>
+
+
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+{% endblock %}
