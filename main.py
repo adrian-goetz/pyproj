@@ -1,20 +1,19 @@
-from flask import Flask, jsonify, request, render_template, url_for
-
-from flask_wtf import Form
-from wtforms import BooleanField
-
-
 import requests  # may need to pip install requests
 import pprint as pp
-import json
 import os  # Used for managing files and folders
 import urllib  # Used for downloading files from URL
+import logging
+
+from flask import Flask, request, render_template
+from flask_wtf import Form
+from wtforms import BooleanField
 
 from data_access_objects import WebcourseObject, Course, Module, CourseItem
 
 web_courses_obj = WebcourseObject()
 
 app = Flask(__name__)
+log = logging.getLogger(__name__)
 
 
 @app.route("/")  # uses the GET method
@@ -49,23 +48,29 @@ def modules_list():
 def selected_items():
     #  This should return a list of the urls of all the checked boxes
     items_selected = request.form
-    item_data = []
+    # item_data = []
     item_num = 0
 
+    # body html uses unicode
+
     for item in items_selected:
-        item_data.append(request.json(item['url']))
+        # item_data.append(item['value'])
         item_num += 1
 
-    #  From there you can check the type of object
-    #  If type is Page, it will have the body tag
-    #  If type is File, it will have the download tag
+    pp.pprint(request.form)
+
+    # get the title and url of each object
+    # attach the access code to the url
+    # From there you can check the type of object
+    # If type is Page, it will have the body tag
+    # If type is File, it will have the download tag
     # testfile = urllib.URLopener()
     # testfile.retrieve("http://randomsite.com/file.gz", "file.gz")
 
     return render_template(
         'download_page.html',
-        data=item_data,
-        item_count=item_num)
+        data=items_selected,
+        item_count=len(items_selected))
 
 
 @app.route("/youre_a_star/")
