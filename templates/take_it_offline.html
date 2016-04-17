@@ -2,19 +2,28 @@
 {% block title %}Take it Offline{% endblock %}
 {% block body %}
 <div class="container">
-  <p>List of Courses:</p>
-  <ul>
-    {% for n in wco._get_courses() %}
-    <li><button>{{n['name']}}</button></li>
-    {% endfor %}
-  </ul>
+  <p>Select course:</p>
+
+  <form name="class_selection" action="{{ url_for('modules_list') }}" method="POST">
+    <select name="course" id="course_select">
+      {% for n in wco._get_courses() %}
+        <option>{{ n['name'] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Choose Course</button>
+  </form>
 </div>
-
-
 
 <p><a href="{{ url_for('index') }}"><button>Home</button></a></p>
 
+<script>
+$('#course_select').change(function() {
+  console.log("changed");
+  $.getJSON($SCRIPT_ROOT + '/take_it_offline', {
 
-<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  }, function(data) {
+    
+  });
+});
+</script>
 {% endblock %}
