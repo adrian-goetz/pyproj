@@ -1,5 +1,9 @@
 from flask import Flask, jsonify, request, render_template, url_for
 
+from flask_wtf import Form
+from wtforms import BooleanField
+
+
 import requests  # may need to pip install requests
 import pprint as pp
 import json
@@ -44,7 +48,7 @@ def modules_list():
 @app.route("/selected_items/", methods=['POST'])
 def selected_items():
     #  This should return a list of the urls of all the checked boxes
-    items_selected = request.form.getlist('check')
+    items_selected = request.form
     item_data = []
     item_num = 0
 
@@ -73,12 +77,11 @@ def construction():
 # use this to make directories
 # os.makedirs('/path/to/directory')
 
+# with open('filename.html', 'wb') as outfile:
+#     outfile.write(response.content)
+
 # for creating files:
 # http://code.runnable.com/UiIdhKohv5JQAAB6/how-to-download-a-file-generated-on-the-fly-in-flask-for-python
 
 if __name__ == "__main__":
-    # response = requests.get('someurl')
-    # with open('filename.html', 'wb') as outfile:
-    #     outfile.write(response.content)
-    app.debug = True
-    app.run()
+    app.run(debug=True)
