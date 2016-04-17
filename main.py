@@ -1,6 +1,3 @@
-import requests  # may need to pip install requests
-import pprint as pp
-import os  # Used for managing files and folders
 import logging
 from zipfile import ZipFile
 
@@ -58,14 +55,6 @@ def selected_items():
                 obj.item_content()
             )
 
-    # get the title and url of each object
-    # attach the access code to the url
-    # From there you can check the type of object
-    # If type is Page, it will have the body tag
-    # If type is File, it will have the download tag
-    # testfile = urllib.URLopener()
-    # testfile.retrieve("http://randomsite.com/file.gz", "file.gz")
-
     return render_template(
         'download_page.html',
         data=form_data,
@@ -77,15 +66,6 @@ def selected_items():
 def construction():
     return render_template("under_construction.html")
 
-
-# use this to make directories
-# os.makedirs('/path/to/directory')
-
-# with open('filename.html', 'wb') as outfile:
-#     outfile.write(response.content)
-
-# for creating files:
-# http://code.runnable.com/UiIdhKohv5JQAAB6/how-to-download-a-file-generated-on-the-fly-in-flask-for-python
 
 if __name__ == "__main__":
     if web_courses_obj.errors:
