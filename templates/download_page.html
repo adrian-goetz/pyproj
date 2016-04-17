@@ -1,0 +1,10 @@
+{% extends "master.html" %}
+{% block title %}{{user}}'s Canvas Tools{% endblock %}
+{% block body %}
+<div class="container">
+<p>Number of Items: {{ item_count }}</p>
+{% for item in data %}
+	<p>{{ item }}</p>
+{% endfor %}
+</div>
+{% endblock %}

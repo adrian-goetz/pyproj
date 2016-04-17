@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request, render_template, url_for
 
-import requests # may need to pip install requests
+import requests  # may need to pip install requests
 import pprint as pp
 import json
-import os #  Used for managing files and folders
-import urllib #  Used for downloading files from URL
+import os  # Used for managing files and folders
+import urllib  # Used for downloading files from URL
 
 from data_access_objects import WebcourseObject, Course, Module, CourseItem
 
@@ -12,18 +12,21 @@ web_courses_obj = WebcourseObject()
 
 app = Flask(__name__)
 
+
 @app.route("/")  # uses the GET method
 def index():
     return render_template("main.html", user="Adrian")
 
+
 @app.route("/take_it_offline/")
-def take_it_offline():
-    return render_template("take_it_offline.html", wco = web_courses_obj)  # pass object information here
+def take_it_offline():  # pass object information here
+    return render_template("take_it_offline.html", wco=web_courses_obj)
+
 
 @app.route("/modules_list/", methods=['POST'])
 def modules_list():
-    course_name=request.form['course']
-    
+    course_name = request.form['course']
+
     temp_list = web_courses_obj._get_courses()
 
     for item in temp_list:
@@ -37,14 +40,17 @@ def modules_list():
         course_obj=this_course,
         module_list=these_modules)
 
+
 @app.route("/selected_items/", methods=['POST'])
 def selected_items():
     #  This should return a list of the urls of all the checked boxes
     items_selected = request.form.getlist('check')
     item_data = []
+    item_num = 0
 
     for item in items_selected:
         item_data.append(request.json(item['url']))
+        item_num += 1
 
     #  From there you can check the type of object
     #  If type is Page, it will have the body tag
@@ -52,13 +58,16 @@ def selected_items():
     # testfile = urllib.URLopener()
     # testfile.retrieve("http://randomsite.com/file.gz", "file.gz")
 
-    return 1
+    return render_template(
+        'download_page.html',
+        data=item_data,
+        item_count=item_num)
+
 
 @app.route("/youre_a_star/")
 @app.route("/final_quest/")
 def construction():
     return render_template("under_construction.html")
-
 
 
 # use this to make directories
