@@ -14,8 +14,8 @@
 		  		{% if item['type'] == 'Page' or item['type'] == 'File' %}
 		  		<li>
 		  			<input type="checkbox"
-		  				name="{{ item['title'] }}"
-		  				value="{{ item['url'] }}" checked>
+		  				name="module_items"
+		  				value="{{ item['url'] }}">
 		  			{{ item['title'] }}
 		  		</li>	
 		  		{% endif %}

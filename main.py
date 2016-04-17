@@ -1,14 +1,12 @@
 import requests  # may need to pip install requests
 import pprint as pp
 import os  # Used for managing files and folders
-import urllib  # Used for downloading files from URL
 import logging
+from zipfile import ZipFile
 
 from flask import Flask, request, render_template
-from flask_wtf import Form
-from wtforms import BooleanField
 
-from data_access_objects import WebcourseObject, Course, Module, CourseItem
+from data_access_objects import WebcourseObject, CourseItem
 
 web_courses_obj = WebcourseObject()
 
@@ -30,9 +28,7 @@ def take_it_offline():  # pass object information here
 def modules_list():
     course_name = request.form['course']
 
-    temp_list = web_courses_obj._get_courses()
-
-    for item in temp_list:
+    for item in web_courses_obj.course_list:
         if item.get_name() == course_name:
             this_course = item
 
@@ -47,17 +43,20 @@ def modules_list():
 @app.route("/selected_items/", methods=['POST'])
 def selected_items():
     #  This should return a list of the urls of all the checked boxes
-    items_selected = request.form
-    # item_data = []
-    item_num = 0
-
     # body html uses unicode
 
-    for item in items_selected:
-        # item_data.append(item['value'])
-        item_num += 1
+    form_data = [
+        CourseItem.from_url(
+            url
+        ) for url in request.form.getlist('module_items')
+    ]
 
-    pp.pprint(request.form)
+    with ZipFile('course-archive.zip', 'w') as z_file:
+        for obj in form_data:
+            z_file.writestr(
+                obj.file_path,
+                obj.item_content()
+            )
 
     # get the title and url of each object
     # attach the access code to the url
@@ -69,8 +68,8 @@ def selected_items():
 
     return render_template(
         'download_page.html',
-        data=items_selected,
-        item_count=len(items_selected))
+        data=form_data,
+        item_count=len(request.form))
 
 
 @app.route("/youre_a_star/")
@@ -89,4 +88,9 @@ def construction():
 # http://code.runnable.com/UiIdhKohv5JQAAB6/how-to-download-a-file-generated-on-the-fly-in-flask-for-python
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    if web_courses_obj.errors:
+        errmsg = '[{0}] could not access webcourses!'
+        app.logging.error(errmsg.format(web_courses_obj.code))
+    else:
+        app.config.update(WTF_CSRF_ENABLED=False)
+        app.run(debug=True)

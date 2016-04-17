@@ -1,12 +1,13 @@
 {% extends "master.html" %}
 {% block title %}Take it Offline{% endblock %}
 {% block body %}
+
 <div class="container">
   <p>Select course:</p>
 
-  <form name="class_selection" action="{{ url_for('modules_list') }}" method="POST">
+  <form name="class_selection" action="{{ url_for('modules_list') }}" method="POST" enctype="multipart/form-data">
     <select name="course" id="course_select">
-      {% for n in wco._get_courses() %}
+      {% for n in wco.course_list %}
         <option>{{ n['name'] }}</option>
       {% endfor %}
     </select>
@@ -16,14 +17,4 @@
 
 <p><a href="{{ url_for('index') }}"><button>Home</button></a></p>
 
-<script>
-$('#course_select').change(function() {
-  console.log("changed");
-  $.getJSON($SCRIPT_ROOT + '/take_it_offline', {
-
-  }, function(data) {
-    
-  });
-});
-</script>
 {% endblock %}

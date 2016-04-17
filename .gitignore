@@ -31,3 +31,4 @@ coverage.xml
 .DS_Store
 .idea
 .idea/*
+*.zip

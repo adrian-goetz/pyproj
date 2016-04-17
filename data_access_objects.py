@@ -1,8 +1,5 @@
 import requests
 
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
-
 api_key = "13~ai4isuqQYZlTRv6YzBHPIAM05epVD2Fd1e9u7ypHFNjZSEH9xb0JHpWamMUFYngw"
 access_token = "?access_token=%s" % (api_key)
 web_url = "https://webcourses.ucf.edu/"
@@ -17,24 +14,25 @@ class DataObject(object):
 
 class WebcourseObject(object):
     def __init__(self):
+        self.errors = False
         # return array of Course objects
-        self.course_list = get_courses()
+        self.course_list = self.get_courses()
 
-    def _get_courses(self):
-        return self.course_list
-
-
-def get_courses():
-    course_list = []
-    url = "%scourses/%s" % (base_url, access_token)
-    response = requests.get(url)  # look into prepared response?
-    for item in response.json():  # response.json() is a list of json objects
-        this_course = Course(
-            name=item['name'],
-            id=item['id'])
-        course_list.append(this_course)
-
-    return course_list
+    def get_courses(self):
+        course_list = []
+        url = "%scourses/%s" % (base_url, access_token)
+        response = requests.get(url)  # look into prepared response?
+        if response.status_code == 200:
+            for item in response.json():
+                # response.json() is a list of json objects
+                this_course = Course(
+                    name=item['name'],
+                    id=item['id'])
+                course_list.append(this_course)
+        else:
+            self.errors = True
+            self.code = response.status_code
+        return course_list
 
 
 class Course(DataObject):
@@ -124,33 +122,80 @@ class CourseItem(DataObject):
     # If the CourseItem references a file, it also has content_id
 
     def __str__(self):
-        return '[{0}] {1}'.format(self.id, self.title)
+        return '[{0}] {1}'.format(self.type, self.name)
 
-    def __repr__(self):
-        return '[{0}] {1}'.format(self.id, self.title)
+    @classmethod
+    def from_url(cls, url, expect_json=True):
 
+        response = requests.get(url + access_token)
 
-def download_link(content_id):
-    link = "%sfiles/%s/download?download_frd=1" % (web_url, content_id)
+        if expect_json:
+            data = response.json()
+        else:
+            data = {'raw': response.content()}
 
-    return link
+        params = {}
+        if 'body' in data:
+            params['type'] = 'page'
+            params['name'] = data['title']
+            params['body'] = data['body']
+            params['filename'] = data['url']
+        else:
+            params['type'] = 'file'
+            params['name'] = data['display_name']
+            params['filename'] = data['filename']
+            params['content_type'] = data['content-type']
+            params['url'] = data['url']
+            params['thumbnail_url'] = data['thumbnail_url']
+            params['size'] = data['size']
 
+        return cls(**params)
 
-def create_page(title, body):
-    html_page = """
-        <!doctype html>
-        <html lang="en">
-            <head>
-              <meta charset="utf-8">
-              <title>%s</title>
-            </head>
-            %s
-        </html>""" % (title, body)
-    return html_page
+    @property
+    def html(self):
+        html_template = unicode((
+            '<!doctype html>'
+            '<html lang="en">'
+            '    <head>'
+            '        <meta charset="utf-8">'
+            '        <title>{title}</title>'
+            '    </head>'
+            '    {body}'
+            '</html>'),
+            encoding='utf-8'
+        )
+        if not hasattr(self, '_html'):
+            if not hasattr(self, 'body'):
+                raise ValueError('missing body attirubte for html')
+            if not hasattr(self, 'name'):
+                raise ValueError('missing name attirubte of html')
+            self._html = html_template.format(
+                title=self.name,
+                body=self.body
+            )
+        return self._html
 
-# web_courses_obj = WebcourseObject()
-# class_array = web_courses_obj._get_courses()
+    @property
+    def file_path(self):
+        if not hasattr(self, '_file_path'):
+            if self.type == 'page':
+                self._file_path = 'files/{0}.html'.format(self.name)
+            else:
+                self._file_path = 'files/{0}'.format(self.filename)
 
+        return self._file_path
 
-# for item in class_array:
-#     pp.pprint(item.set_modules())
+    # can set a max size
+    def item_content(self, cache=False):
+        if self.type == 'page':
+            content = self.html.encode('utf-8')
+        elif hasattr(self, '_raw'):
+            content = self._raw
+        else:
+            response = requests.get(self.url)
+            if cache is True:
+                self._raw = response.content
+            content = response.content
+        # if isinstance(content, unicode):
+        #     content = bytes(content, 'utf-8')
+        return content
