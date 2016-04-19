@@ -13,6 +13,11 @@ log = logging.getLogger(__name__)
 
 @app.route("/")  # uses the GET method
 def index():
+    """
+    Replaces index.html location.
+    Provides links to take_it_offline, final_quest, and youre_a_star
+    Locations final_quest and youre_a_star not yet developed.
+    """
     return render_template("main.html", user="Adrian")
 
 

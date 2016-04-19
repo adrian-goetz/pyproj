@@ -10,7 +10,7 @@
 	  {% for module in module_list %}
 	  	<li>{{ module['name'] }}
 	  		<ul class="no-bullet">
-		  	{% for item in module.get_items() %}
+		  	{% for item in module.get_module_items() %}
 		  		{% if item['type'] == 'Page' or item['type'] == 'File' %}
 		  		<li>
 		  			<input type="checkbox"

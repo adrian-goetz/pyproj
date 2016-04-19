@@ -7,12 +7,25 @@ base_url = "%sapi/v1/" % (web_url)
 
 
 class DataObject(object):
+    """
+    Initiate the DataObject class, allow it to take any number of params
+    as long as they are paired with a keyword. The keyword for that param
+    becomes the same as the one given.
+    """
     def __init__(self, **kwargs):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
 
 class WebcourseObject(object):
+    """
+    Create an object to handle calls to webcourses.
+    get_courses looks for the response status_code 200
+    to verify connection is made
+    get_courses() returns a list of the courses with:
+    name - for display
+    id - for reference in creating modules
+    """
     def __init__(self):
         self.errors = False
         # return array of Course objects
@@ -27,7 +40,7 @@ class WebcourseObject(object):
                 # response.json() is a list of json objects
                 this_course = Course(
                     name=item['name'],
-                    id=item['id'])
+                    cid=item['id'])
                 course_list.append(this_course)
         else:
             self.errors = True
@@ -36,6 +49,15 @@ class WebcourseObject(object):
 
 
 class Course(DataObject):
+    """
+    A course object has a name and an id.
+    get_modules() returns a list of modules.
+    The returned modules have:
+    name - for display
+    id - for reference in creating items
+    items_url - for listing all the items in a module
+    cid - Course ID
+    """
     # A course has a name, id, and list of modules
     @property
     def modules(self):
@@ -44,8 +66,18 @@ class Course(DataObject):
         return self._modules
 
     def get_modules(self):
-        self._modules = get_modules(self.id)
-        return self._modules
+        module_list = []
+        url = "%scourses/%s/modules%s" % (base_url, self.cid, access_token)
+        response = requests.get(url)
+        for item in response.json():
+            this_module = Module(
+                name=item['name'],
+                mid=item['id'],
+                items_url=item['items_url'],
+                cid=self.cid)
+            module_list.append(this_module)
+
+        return module_list
 
     def get_name(self):
         return self.name
@@ -60,28 +92,26 @@ class Course(DataObject):
         return "[{0}] {1}".format(self.id, self.name)
 
 
-# returns modules in a course based on course_id
-def get_modules(cid):
-    module_list = []
-    url = "%scourses/%s/modules%s" % (base_url, cid, access_token)
-    response = requests.get(url)
-    for item in response.json():
-        this_module = Module(
-            name=item['name'],
-            mid=item['id'],
-            items_url=item['items_url'],
-            cid=cid)
-        module_list.append(this_module)
-
-    return module_list
-
-
 class Module(DataObject):
-    # A module has a name, id, and items_url. It generates CourseItems
+    """
+    A module has a name, id, and items_url. It generates CourseItems
+    """
 
-    def get_items(self):
-        self._items = get_module_items(cid=self.cid, mid=self.mid)
-        return self._items
+    def get_module_items(self):  # return a list of items in module
+        item_list = []
+        url = "%scourses/%s/modules/%s/items%s" % (
+            base_url, self.cid, self.mid, access_token)
+        response = requests.get(url)
+
+        for item in response.json():
+            if item['type'] == 'File' or item['type'] == 'Page':
+                this_item = CourseItem(
+                    title=item['title'],
+                    id=item['id'],
+                    type=item['type'],
+                    url=item['url'])
+                item_list.append(this_item)
+        return item_list
 
     def __str__(self):
         return '[{0}] {1}'.format(self.id, self.name)
@@ -90,36 +120,16 @@ class Module(DataObject):
         return '[{0}] {1}'.format(self.id, self.name)
 
 
-# return a list of items in module
-def get_module_items(cid, mid):
-    item_list = []
-    url = "%scourses/%s/modules/%s/items%s" % (
-        base_url, cid, mid, access_token)
-    response = requests.get(url)
-
-    for item in response.json():
-        this_item = None
-        if item['type'] == 'File':
-            # content_id can be used in the download link of a file
-            this_item = CourseItem(
-                title=item['title'],
-                id=item['id'],
-                type=item['type'],
-                url=item['url'],
-                content_id=item['content_id'])
-        elif item['type'] == 'Page':
-            this_item = CourseItem(
-                title=item['title'],
-                id=item['id'],
-                type=item['type'],
-                url=item['url'])
-        item_list.append(this_item)
-    return item_list
-
-
 class CourseItem(DataObject):
-    # A CourseItem has a title, id, type, and url.
-    # If the CourseItem references a file, it also has content_id
+    """
+    A CourseItem has a type and name.
+    A Canvas Wiki Page also had a 'body', we use the url
+    as the 'filename' property
+    A File has a 'filename', 'content_type', 'url'
+        'thumbnail_url' and 'size'.
+    The thumbnail and size are not yet utilized.
+    from_url uses 'cls' to reference class information
+    """
 
     def __str__(self):
         return '[{0}] {1}'.format(self.type, self.name)
@@ -185,7 +195,6 @@ class CourseItem(DataObject):
 
         return self._file_path
 
-    # can set a max size
     def item_content(self, cache=False):
         if self.type == 'page':
             content = self.html.encode('utf-8')
@@ -196,6 +205,4 @@ class CourseItem(DataObject):
             if cache is True:
                 self._raw = response.content
             content = response.content
-        # if isinstance(content, unicode):
-        #     content = bytes(content, 'utf-8')
         return content
