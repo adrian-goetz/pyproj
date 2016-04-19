@@ -58,7 +58,7 @@ def selected_items():
     return render_template(
         'download_page.html',
         data=form_data,
-        item_count=len(request.form))
+        item_count=len(form_data))
 
 
 @app.route("/youre_a_star/")

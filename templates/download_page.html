@@ -2,9 +2,12 @@
 {% block title %}{{user}}'s Canvas Tools{% endblock %}
 {% block body %}
 <div class="container">
-<p>Number of Items: {{ item_count }}</p>
+<h1>Items Downloaded: {{ item_count }}</h1>
+<ul class="no-bullet">
 {% for item in data %}
-	<p>{{ item }}</p>
+	<li>{{ item }}</li>
 {% endfor %}
+</ul>
+<p><a href="{{ url_for('index') }}"><button>Home</button></a></p>
 </div>
 {% endblock %}

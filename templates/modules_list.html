@@ -2,14 +2,14 @@
 {% block title %}Take it Offline{% endblock %}
 {% block body %}
 <div class="container">
-  <p>Selected Course: {{ course_obj.get_name() }}</p>
+  <h1>Selected Course: {{ course_obj.get_name() }}</h1>
   <form name="item_selection"
   	action="{{ url_for('selected_items') }}"
   	method="POST">
 	  <ol>
 	  {% for module in module_list %}
 	  	<li>{{ module['name'] }}
-	  		<ul style="list-style-type: none;">
+	  		<ul class="no-bullet">
 		  	{% for item in module.get_items() %}
 		  		{% if item['type'] == 'Page' or item['type'] == 'File' %}
 		  		<li>
