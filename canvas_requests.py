@@ -6,7 +6,7 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 
-api_key = "13~ai4isuqQYZlTRv6YzBHPIAM05epVD2Fd1e9u7ypHFNjZSEH9xb0JHpWamMUFYngw"
+api_key = ""
 access_token = "?access_token=%s" % (api_key)
 web_url = "https://webcourses.ucf.edu/"
 base_url = "%sapi/v1/" % (web_url)
